@@ -18,10 +18,21 @@ public class Board {
     public void printBoard() {
         for(int y = 0; y < height; y++) {
             for(int x = 0; x < width; x++) {
-                System.out.print(cells[x][y] + " ");
+                System.out.print(cells[x][y] + "  ");
             }
-            System.out.println();
+            System.out.println(" |" + (y+1));
         }
+        for(int x = 0; x < width; x++) {
+            System.out.print("_  ");
+        }
+        System.out.println();
+        for(int x = 0; x < width; x++) {
+            System.out.print((x+1) + " ");
+            if(x+1 < 10) {
+                System.out.print(" ");
+            }
+        }
+        System.out.println();
     }
 
     public void revealCell(Position position) {
