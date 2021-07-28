@@ -13,6 +13,7 @@ import java.awt.event.MouseListener;
  * message is shown if the game is deemed to be over.
  */
 public class BoardPanel extends JPanel implements MouseListener {
+    public enum GameState { Playing, Won, Lost }
     /**
      * Reference to the Board containing the game state.
      */
@@ -35,13 +36,9 @@ public class BoardPanel extends JPanel implements MouseListener {
     private int boardHeight;
 
     /**
-     * Represents a flag to indicate when a win/lose state occurs.
-     * 0 = playing game (accepting input from clicks)
-     * 1 = Game over.
-     * 2 = Victory
-     * A state greater than 0 will show an overlay indicating the state.
+     * The current game state that can represent Playing, Won, or Lost.
      */
-    private int state = 0;
+    private GameState state;
 
     /**
      * Font used for rendering the numbers in cells.
@@ -68,6 +65,7 @@ public class BoardPanel extends JPanel implements MouseListener {
         addMouseListener(this);
         board = new Board(boardWidth, boardHeight);
         board.spawnBombs(10);
+        state = GameState.Playing;
     }
 
     /**
@@ -90,19 +88,23 @@ public class BoardPanel extends JPanel implements MouseListener {
         // Fill all the cells with relevant state visual data
         for(int x = 0; x < boardWidth; x++) {
             for(int y = 0; y < boardHeight; y++) {
-                if(!board.isCellRevealed(x,y))
-                    if(board.isCellFlagged(x,y))
-                        drawFilledCell(g, x, y, Color.yellow);
-                    else
-                        drawFilledCell(g, x, y, Color.darkGray);
-                else
-                    drawCellContent(g,x,y);
+                Position position = new Position(x,y);
+                if(!board.isCellRevealed(position)) {
+                    if (board.isCellFlagged(position)) {
+                        drawFilledCell(g, position, Color.yellow);
+                    } else {
+                        drawFilledCell(g, position, Color.darkGray);
+                    }
+                } else {
+                    drawCellContent(g, position);
+                }
             }
         }
 
         // Show an overlay for victory/defeat if game is over.
-        if(state > 0)
+        if(state != GameState.Playing) {
             drawEndPopup(g);
+        }
     }
 
     /**
@@ -115,7 +117,7 @@ public class BoardPanel extends JPanel implements MouseListener {
     private void drawEndPopup(Graphics g) {
         g.setFont(endFont);
         g.setColor(Color.WHITE);
-        String str = (state == 1) ? "Boom! You lose. :(" : "You win! :D";
+        String str = (state == GameState.Lost) ? "Boom! You lose. :(" : "You win! :D";
         int textWidth = g.getFontMetrics().stringWidth(str);
 
         // Render the rectangle filled with while and a black border.
@@ -124,7 +126,7 @@ public class BoardPanel extends JPanel implements MouseListener {
         g.drawRect(boardWidth*CELL_WIDTH/2-textWidth/2-10,boardHeight*CELL_HEIGHT/2-35,textWidth+20,50);
 
         // Overlay the text with either red or green colour based on the state (red for loss, green for victory).
-        g.setColor((state == 1) ? Color.red : Color.GREEN);
+        g.setColor((state == GameState.Lost) ? Color.red : Color.GREEN);
         g.drawString(str, boardWidth*CELL_WIDTH/2-textWidth/2, boardHeight*CELL_HEIGHT/2);
     }
 
@@ -153,13 +155,12 @@ public class BoardPanel extends JPanel implements MouseListener {
      * it should be relative to the board space.
      *
      * @param g A reference to the Graphics object for rendering.
-     * @param x X coordinate on the Board.
-     * @param y Y coordinate on the Board.
+     * @param position A position with an x and y coordinate.
      * @param c Colour to fill the cell with.
      */
-    private void drawFilledCell(Graphics g, int x, int y, Color c) {
+    private void drawFilledCell(Graphics g, Position position, Color c) {
         g.setColor(c);
-        g.fillRect(x*CELL_WIDTH+3, y*CELL_HEIGHT+2, CELL_WIDTH-5, CELL_HEIGHT-5);
+        g.fillRect(position.x*CELL_WIDTH+3, position.y*CELL_HEIGHT+2, CELL_WIDTH-5, CELL_HEIGHT-5);
     }
 
     /**
@@ -167,14 +168,13 @@ public class BoardPanel extends JPanel implements MouseListener {
      * based on the content in the Board object at x,y. Does nothing if "0".
      *
      * @param g A reference to the Graphics object for rendering.
-     * @param x X coordinate on the Board.
-     * @param y Y coordinate on the Board.
+     * @param position A position with an x and y coordinate.
      */
-    private void drawCellContent(Graphics g, int x, int y) {
-        Cell c = board.getCellAt(x,y);
+    private void drawCellContent(Graphics g, Position position) {
+        Cell c = board.getCellAt(position);
         if(c.toString().equals("0")) return;
         g.setColor(getColourForCell(c));
-        g.drawString(c.toString(), (int)((x) * CELL_WIDTH)+10 , (int)((y+0.5) * CELL_HEIGHT)+5 );
+        g.drawString(c.toString(), position.x * CELL_WIDTH+10 , (int)((position.y+0.5) * CELL_HEIGHT)+5 );
     }
 
     /**
@@ -209,34 +209,33 @@ public class BoardPanel extends JPanel implements MouseListener {
      */
     @Override
     public void mouseClicked(MouseEvent e) {
-        // Check if game is won/lost
-        if(state != 0) return;
+        // Only handle the clicks if currently playing.
+        if(state != GameState.Playing) return;
 
         // Check relative cell position to translate into coordinates for Board
-        int x = e.getX() / CELL_WIDTH;
-        int y = e.getY() / CELL_HEIGHT;
+        Position mousePosition = new Position(e.getX() / CELL_WIDTH, e.getY() / CELL_HEIGHT);
 
         // Debug message to show where was clicked with the relative cell coordinates
         //System.out.println("Clicked: " + e.getX() + " " + e.getY() + ": " + x + " " + y);
 
         // Check for invalid click off the board
-        if(!board.validCoord(x,y)) return;
+        if(!board.validPosition(mousePosition)) return;
 
         // Check for a left click to reveal the target cell
-        if(SwingUtilities.isLeftMouseButton(e) && !board.isCellFlagged(x,y)) {
-            board.revealCell(x,y);
+        if(SwingUtilities.isLeftMouseButton(e) && !board.isCellFlagged(mousePosition)) {
+            board.revealCell(mousePosition);
             // Update the game state if the game has been won/lost
             if(board.isWon()) {
                 board.revealAll();
-                state = 2;
-            } else if(board.isCellBomb(x,y)) {
+                state = GameState.Won;
+            } else if(board.isCellBomb(mousePosition)) {
                 board.revealAll();
-                state = 1;
+                state = GameState.Lost;
             }
             board.printStatus();
         } else if(SwingUtilities.isRightMouseButton(e)) {
             // Flag the target cell if it was a right click
-            board.flagCell(x,y);
+            board.flagCell(mousePosition);
         }
 
         // Forces the game to render with changes

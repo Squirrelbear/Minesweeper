@@ -4,10 +4,12 @@ import javax.swing.*;
 
 /**
  * Minesweeper
- * Author: Peter Mitchell (2021)
  *
  * Class Main:
  * Entry point for the program that creates the game and starts it.
+ *
+ * @author Peter Mitchell
+ * @version 2021.1
  */
 public class Main {
     /**
@@ -25,7 +27,11 @@ public class Main {
 
         if(choice == JOptionPane.YES_OPTION) {
             // Launch the GUI version by creating the frame and making it visible.
-            GUI gui = new GUI();
+            JFrame gui = new JFrame("Minesweeper");
+            gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            gui.setResizable(false);
+            gui.getContentPane().add(new BoardPanel(10,10));
+            gui.pack();
             gui.setVisible(true);
         } else if(choice == JOptionPane.NO_OPTION) {
             // Launch the CLI version by creating the Game and then starting it.

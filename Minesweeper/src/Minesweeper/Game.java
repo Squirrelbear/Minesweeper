@@ -4,12 +4,14 @@ import java.util.Scanner;
 
 /**
  * Minesweeper
- * Author: Peter Mitchell (2021)
  *
  * Class Game:
  * Text based implementation of the game with a game loop.
  * The game ends when either all non-bomb cells have been successfully
  * revealed or when the player loses by revealing a bomb.
+ *
+ * @author Peter Mitchell
+ * @version 2021.1
  */
 public class Game {
     /**
@@ -20,10 +22,6 @@ public class Game {
      * Reference to a shared Scanner object.
      */
     private Scanner scan;
-    /**
-     * The position where the player is making their next action.
-     */
-    private int targetX, targetY;
 
     /**
      * Initialises the game with a shared Scanner.
@@ -47,36 +45,27 @@ public class Game {
     public void startGame() {
         // Used to apply commands in addition to the coordinate.
         String extraCommand;
+        Position inputPosition;
         do {
             board.printBoard();
             board.printStatus();
-            getInput();
+            inputPosition = getPositionInput();
             extraCommand = getStringOrQuit(scan).trim();
             if(extraCommand.equalsIgnoreCase("flag")) {
-                board.flagCell(targetX, targetY);
-            } else if(board.isCellFlagged(targetX, targetY)) {
-                System.out.println("You need to unflag that cell first.");
+                board.flagCell(inputPosition);
+            } else if(board.isCellFlagged(inputPosition)) {
+                System.out.println("You need to un-flag that cell first.");
             } else {
-                board.revealCell(targetX, targetY);
+                board.revealCell(inputPosition);
             }
-
-            if(board.isWon()) {
-                showFinalBoard();
-                System.out.println("Victory! You revealed all the non-bombs!");
-                return;
-            }
-        } while(extraCommand.equalsIgnoreCase("flag") || !board.isCellBomb(targetX,targetY));
-        showFinalBoard();
-        System.out.println("Boom! You hit a bomb! :(");
-    }
-
-    /**
-     * Reveals all cells on the board and prints the board.
-     * Use after the game has been won or lost to do a full reveal.
-     */
-    public void showFinalBoard() {
+        } while(!board.isWon() && (extraCommand.equalsIgnoreCase("flag") || !board.isCellBomb(inputPosition)));
         board.revealAll();
         board.printBoard();
+        if(board.isWon()) {
+            System.out.println("Victory! You revealed all the non-bombs!");
+        } else {
+            System.out.println("Boom! You hit a bomb! :(");
+        }
     }
 
     /**
@@ -85,7 +74,8 @@ public class Game {
      * The values are stored into targetX and targetY with adjusted values
      * to take them from the 1 to n range to the 0 to n-1 range.
      */
-    public void getInput() {
+    public Position getPositionInput() {
+        Position input = new Position(0,0);
         do {
             System.out.println("Enter space separated X (bottom) then Y (left) coordinate: ");
             if(!scan.hasNextInt()) {
@@ -93,16 +83,17 @@ public class Game {
                 System.out.println("Invalid X coordinate.");
                 continue;
             }
-            targetX = scan.nextInt();
+            input.x = scan.nextInt();
             if(!scan.hasNextInt()) {
                 getStringOrQuit(scan);
                 System.out.println("Invalid Y coordinate.");
                 continue;
             }
-            targetY = scan.nextInt();
-            targetX--;
-            targetY--;
-        } while(!isInputValid(targetX, targetY));
+            input.y = scan.nextInt();
+            input.x--;
+            input.y--;
+        } while(!isPositionInputValid(input));
+        return input;
     }
 
     /**
@@ -110,16 +101,15 @@ public class Game {
      * Then also checks if the cell has already been revealed. Can not reveal a cell that
      * has already been revealed.
      *
-     * @param x X coordinate.
-     * @param y Y coordinate.
+     * @param position The position with an x and y coordinate.
      * @return True if the coordinate is inside the play space and the cell has not been revealed.
      */
-    private boolean isInputValid(int x, int y) {
-        if(x < 0 || y < 0 || x > board.getWidth()-1 || y > board.getHeight()-1) {
+    private boolean isPositionInputValid(Position position) {
+        if(!board.validPosition(position)) {
             System.out.println("Coordinate not inside the play space!");
             return false;
         }
-        if(board.isCellRevealed(x,y)) {
+        if(board.isCellRevealed(position)) {
             System.out.println("That cell is already revealed!");
             return false;
         }
