@@ -219,9 +219,9 @@ public class Board {
 
         // Get bounds of cells +/- 1 around x,y
         int minX = Math.max(0,position.x-1);
-        int maxX = Math.min(cells[0].length-1,position.x+1);
+        int maxX = Math.min(width-1,position.x+1);
         int minY = Math.max(0,position.y-1);
-        int maxY = Math.min(cells.length-1,position.y+1);
+        int maxY = Math.min(height-1,position.y+1);
         // Increase neighbours for all surrounding cells
         for(int y1 = minY; y1 <= maxY; y1++) {
             for (int x1 = minX; x1 <= maxX; x1++) {
@@ -278,7 +278,7 @@ public class Board {
         {
             // Extracting front position from the queue.
             Position positionToReveal = positionQueue.remove();
-            getCellAt(position).reveal();
+            getCellAt(positionToReveal).reveal();
             changedPoints.add(positionToReveal);
 
             // For Upside Pixel or Cell
@@ -301,14 +301,15 @@ public class Board {
      *
      * @param position The position to check.
      * @param vis The visited matrix indicating Cells that have already been checked.
-     * @param objQueue The queue of Cell positions to still check.
+     * @param positionQueue The queue of Cell positions to still check.
      */
-    private void checkFloodFillToCell(Position position, int[][] vis, Queue<Position> objQueue) {
-        if (validPosition(position) && vis[position.x][position.y] == 0
-                && !getCellAt(position).getIsRevealed()
-                && getCellAt(position).getNeighbours() == 0)
-        {
-            objQueue.add(position);
+    private void checkFloodFillToCell(Position position, int[][] vis, Queue<Position> positionQueue) {
+        if (validPosition(position)) {
+            if (vis[position.x][position.y] == 0
+                    && !getCellAt(position).getIsRevealed()
+                    && getCellAt(position).getNeighbours() == 0) {
+                positionQueue.add(position);
+            }
             vis[position.x][position.y] = 1;
         }
     }
@@ -341,17 +342,17 @@ public class Board {
 
         // Get bounds of cells +/- 1 around x,y
         int minX = Math.max(0,position.x -1);
-        int maxX = Math.min(cells[0].length-1,position.x +1);
+        int maxX = Math.min(width-1,position.x +1);
         int minY = Math.max(0,position.y -1);
-        int maxY = Math.min(cells.length-1,position.y +1);
+        int maxY = Math.min(height-1,position.y +1);
 
         // Iterate through all surrounding cells
         for(int y1 = minY; y1 <= maxY; y1++) {
             for (int x1 = minX; x1 <= maxX; x1++) {
                 // Not already revealed and not the start of another empty area.
-                if(!cells[y1][x1].getIsRevealed() && cells[y1][x1].getNeighbours()>0) {
+                if(!cells[x1][y1].getIsRevealed() && cells[x1][y1].getNeighbours()>0) {
                     changedCells.add(new Position(x1,y1));
-                    cells[y1][x1].reveal();
+                    cells[x1][y1].reveal();
                 }
             }
         }

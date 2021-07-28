@@ -77,7 +77,7 @@ public class Game {
     public Position getPositionInput() {
         Position input = new Position(0,0);
         do {
-            System.out.println("Enter space separated X (bottom) then Y (left) coordinate: ");
+            System.out.println("Enter space separated X (bottom) then Y (right) coordinate: ");
             if(!scan.hasNextInt()) {
                 getStringOrQuit(scan);
                 System.out.println("Invalid X coordinate.");
