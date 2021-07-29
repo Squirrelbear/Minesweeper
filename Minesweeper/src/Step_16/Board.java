@@ -1,8 +1,9 @@
-package Step_13;
+package Step_16;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.Queue;
+import java.util.*;
 
 public class Board {
     private Cell[][] cells;
@@ -125,7 +126,7 @@ public class Board {
         int maxY = Math.min(height-1, position.y+1);
         for(int y = minY; y <= maxY; y++) {
             for(int x = minX; x <= maxX; x++) {
-                if(!cells[x][y].getIsRevealed()) {
+                if(!cells[x][y].getIsRevealed() && cells[x][y].getNeighbours() != 0) {
                     cells[x][y].reveal();
                     revealedTotal++;
                 }
@@ -186,5 +187,15 @@ public class Board {
                 cells[x][y].drawCell(g, x*cellSize, y*cellSize, cellSize);
             }
         }
+    }
+
+    public void reset() {
+        for(int x = 0; x < width; x++) {
+            for(int y = 0; y < height; y++) {
+                cells[x][y].resetCell();
+            }
+        }
+        bombCount = 0;
+        revealedTotal = 0;
     }
 }
