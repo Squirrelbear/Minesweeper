@@ -1,10 +1,11 @@
-package Step_6;
+package Step_7;
 
 import java.util.Random;
 
 public class Board {
     private Cell[][] cells;
     private int width, height;
+    private int bombCount, revealedTotal;
 
     public Board(int width, int height) {
         this.width = width;
@@ -15,6 +16,8 @@ public class Board {
                 cells[x][y] = new Cell();
             }
         }
+        bombCount = 0;
+        revealedTotal = 0;
     }
 
     public void printBoard() {
@@ -38,6 +41,7 @@ public class Board {
     }
 
     public void revealCell(Position position) {
+        revealedTotal++;
         cells[position.x][position.y].reveal();
     }
 
@@ -77,6 +81,7 @@ public class Board {
         }
 
         cells[position.x][position.y].setAsBomb();
+        bombCount++;
         return true;
     }
 
@@ -93,5 +98,14 @@ public class Board {
                 cells[x][y].reveal();
             }
         }
+    }
+
+    public boolean isWon() {
+        return revealedTotal + bombCount == width * height;
+    }
+
+    public void printStatus() {
+        System.out.println(revealedTotal + " revealed of " + (width*height)
+                            + " with " + bombCount + " bombs!");
     }
 }

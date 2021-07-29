@@ -1,4 +1,4 @@
-package Step_6;
+package Step_9;
 
 public class Cell {
     private boolean isRevealed;

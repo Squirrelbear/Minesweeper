@@ -1,10 +1,17 @@
-package Step_6;
+package Step_12;
 
 public class Cell {
     private boolean isRevealed;
     private boolean isBomb;
     private int neighbours;
     private boolean isFlagged;
+
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_RED = "\u001B[31m";
+    private static final String ANSI_GREEN = "\u001B[32m";
+    private static final String ANSI_YELLOW = "\u001B[33m";
+    private static final String ANSI_BLUE = "\u001B[34m";
+    private static final String ANSI_PURPLE = "\u001B[35m";
 
     public Cell() {
         resetCell();
@@ -60,6 +67,27 @@ public class Cell {
           return "F";
         } else {
             return "*";
+        }
+    }
+
+    private String colourString(String str, String colourFlag) {
+        return colourFlag + str + ANSI_RESET;
+    }
+
+    public String getColouredString() {
+        String str = toString();
+        if(isFlagged) {
+            return colourString(str, ANSI_GREEN);
+        } else if(isRevealed) {
+            if(isBomb) {
+                return colourString(str, ANSI_RED);
+            } else if(neighbours == 0) {
+                return colourString(str, ANSI_PURPLE);
+            } else {
+                return colourString(str, ANSI_YELLOW);
+            }
+        } else {
+            return colourString(str, ANSI_BLUE);
         }
     }
 }

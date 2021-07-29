@@ -1,4 +1,4 @@
-package Step_6;
+package Step_11;
 
 import java.util.Scanner;
 
@@ -17,6 +17,7 @@ public class Game {
         Position inputPosition;
         do {
             board.printBoard();
+            board.printStatus();
             inputPosition = getPositionInput();
             isFlagging = getStringOrQuit().equalsIgnoreCase("flag");
             if(isFlagging) {
@@ -26,7 +27,14 @@ public class Game {
             } else {
                 board.revealCell(inputPosition);
             }
-        } while(true);
+        } while(!board.isWon() && (isFlagging || !board.isCellBomb(inputPosition)));
+        board.revealAll();
+        board.printBoard();
+        if(board.isWon()) {
+            System.out.println("Victory! You revealed all the non-bombs!");
+        } else {
+            System.out.println("Boom! You hit a bomb! :(");
+        }
     }
 
     public boolean isPositionInputValid(Position position) {
