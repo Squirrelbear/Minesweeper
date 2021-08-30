@@ -13,6 +13,7 @@
 1. 6 Implementation as a CLI 
 1.7 Implementation as a GUI
 1.8 Features You Could Add 
+```
 
 # 1.2 Introduction
 
