@@ -19,6 +19,8 @@
 
 This document will explain the fundamentals of how the Minesweeper game works. 
 
+- ([Youtube Demo](https://youtu.be/DvsNwkEJrzc))
+
 # 1.3 The Rules of Minesweeper
 
 Minesweeper has a very simple set of rules that are clearly defined allowing distinct elements to be
